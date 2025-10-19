@@ -1,8 +1,24 @@
-const fileInput = document.getElementById("fileInput");
 const combineBtn = document.getElementById("combineBtn");
 const downloadBtn = document.getElementById("downloadBtn");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+
+// Badge image paths
+const badgeImages = {
+    ozpertBadges: {
+        bronze: 'badges/ozpert-bronze.png',
+        silver: 'badges/ozpert-silver.png',
+        gold: 'badges/ozpert-gold.png',
+        diamond: 'badges/ozpert-diamond.png'
+    },
+    coreValues: {
+        bePositive: 'badges/be-positive.png',
+        empathize: 'badges/empathize.png',
+        evolveConstantly: 'badges/evolve-constantly.png',
+        focusOnOutcome: 'badges/focus-on-outcome.png',
+        succeedAsTeam: 'badges/succeed-as-team.png'
+    }
+};
 
 let combinedImageBlob = null;
 
@@ -45,23 +61,55 @@ function resizeImage(img, targetWidth, targetHeight) {
   return tempCanvas;
 }
 
+// Function to load an image from URL
+function loadImageFromUrl(url) {
+    console.log('Loading image from:', url);
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            console.log('Successfully loaded image:', url);
+            resolve(img);
+        };
+        img.onerror = () => {
+            console.error(`Failed to load image: ${url}`);
+            reject(new Error(`Failed to load image: ${url}`));
+        };
+        img.src = url;
+    });
+}
+
+// Function to get selected radio button value from a group
+function getSelectedValue(name) {
+    const radio = document.querySelector(`input[name="${name}"]:checked`);
+    return radio ? radio.value : null;
+}
+
 combineBtn.addEventListener("click", async () => {
-  const files = fileInput.files;
-  if (!files.length) {
-    alert("Please select one or more images first.");
-    return;
-  }
+    console.log('Combine button clicked');
+    const ozpertValue = getSelectedValue('ozpertBadge');
+    const coreValue = getSelectedValue('coreValue');
+    
+    console.log('Selected badges:', { ozpertValue, coreValue });
+    
+    if (!ozpertValue || !coreValue) {
+        alert("Please select one badge from each category.");
+        return;
+    }
 
-  try {
-    const images = await Promise.all([...files].map(loadImage));
+    try {
+        // Load selected images
+        const selectedImages = await Promise.all([
+            loadImageFromUrl(badgeImages.ozpertBadges[ozpertValue]),
+            loadImageFromUrl(badgeImages.coreValues[coreValue])
+        ]);
 
-    // Find the ideal dimensions (max dimensions from all images)
-    const maxWidth = Math.max(...images.map(img => img.width));
-    const maxHeight = Math.max(...images.map(img => img.height));
+        // Find the ideal dimensions
+        const maxWidth = Math.max(...selectedImages.map(img => img.width));
+        const maxHeight = Math.max(...selectedImages.map(img => img.height));
 
-    // Standardize size for all images
-    const standardSize = Math.max(maxWidth, maxHeight);
-    const resizedImages = images.map(img => resizeImage(img, standardSize, standardSize));
+        // Standardize size for all images
+        const standardSize = Math.max(maxWidth, maxHeight);
+        const resizedImages = selectedImages.map(img => resizeImage(img, standardSize, standardSize));
 
     // Calculate total width and use standard height
     const totalWidth = standardSize * resizedImages.length;

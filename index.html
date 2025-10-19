@@ -10,14 +10,62 @@
   <main class="container">
     <h1>Email Badge Combiner</h1>
 
-    <input type="file" id="fileInput" multiple accept="image/png, image/jpeg" />
+    <div class="badge-selection">
+      <div class="badge-group">
+        <h3>Ozpert Badges:</h3>
+        <div class="radio-group">
+          <label>
+            <input type="radio" name="ozpertBadge" value="bronze" />
+            Bronze
+          </label>
+          <label>
+            <input type="radio" name="ozpertBadge" value="silver" />
+            Silver
+          </label>
+          <label>
+            <input type="radio" name="ozpertBadge" value="gold" />
+            Gold
+          </label>
+          <label>
+            <input type="radio" name="ozpertBadge" value="diamond" />
+            Diamond
+          </label>
+        </div>
+      </div>
 
-    <button id="combineBtn">Combine Images</button>
+      <div class="badge-group">
+        <h3>OZ Core Values:</h3>
+        <div class="radio-group">
+          <label>
+            <input type="radio" name="coreValue" value="bePositive" />
+            Be Positive
+          </label>
+          <label>
+            <input type="radio" name="coreValue" value="empathize" />
+            Empathize
+          </label>
+          <label>
+            <input type="radio" name="coreValue" value="evolveConstantly" />
+            Evolve Constantly
+          </label>
+          <label>
+            <input type="radio" name="coreValue" value="focusOnOutcome" />
+            Focus on Outcome
+          </label>
+          <label>
+            <input type="radio" name="coreValue" value="succeedAsTeam" />
+            We Succeed as a Team
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <button id="combineBtn">Combine Selected Badges</button>
     <button id="downloadBtn" disabled>Download Combined Image</button>
 
     <canvas id="canvas"></canvas>
 
-    <p class="note">Select multiple badges and click "Combine".</p>
+    <p class="note">Select one badge from each category and click "Combine Selected Badges".</p>
   </main>
 
   <script src="script.js"></script>
