@@ -18,6 +18,9 @@
   "bugs": {
     "url": "https://github.com/ianjenks230/BadgeApp2/issues"
   },
+  "dependencies": {
+    "canvas": "^2.11.2"
+  },
   "homepage": "https://github.com/ianjenks230/BadgeApp2#readme",
   "dependencies": {
     "canvas": "^3.2.0"
