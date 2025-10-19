@@ -5,7 +5,7 @@
   "main": "generate-placeholders.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node generate-placeholders.js",
+    "build:azure": "node generate-placeholders.js && echo 'Build completed'",
     "start": "http-server ."
   },
   "repository": {
