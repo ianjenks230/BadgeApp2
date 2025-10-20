@@ -1,5 +1,6 @@
 const combineBtn = document.getElementById("combineBtn");
 const downloadBtn = document.getElementById("downloadBtn");
+const clearBtn = document.getElementById("clearBtn"); // New clear button
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
@@ -25,41 +26,39 @@ let combinedImageBlob = null;
 
 // Function to resize image maintaining aspect ratio
 function resizeImage(img, targetWidth, targetHeight) {
-  const tempCanvas = document.createElement('canvas');
-  const tempCtx = tempCanvas.getContext('2d');
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
 
-  // Calculate aspect ratios
-  const imgRatio = img.width / img.height;
-  const targetRatio = targetWidth / targetHeight;
+    // Calculate aspect ratios
+    const imgRatio = img.width / img.height;
+    const targetRatio = targetWidth / targetHeight;
 
-  // Determine dimensions to maintain aspect ratio
-  let finalWidth = targetWidth;
-  let finalHeight = targetHeight;
+    // Determine dimensions to maintain aspect ratio
+    let finalWidth = targetWidth;
+    let finalHeight = targetHeight;
 
-  if (imgRatio > targetRatio) {
-    // Image is wider than target ratio
-    finalHeight = targetWidth / imgRatio;
-  } else {
-    // Image is taller than target ratio
-    finalWidth = targetHeight * imgRatio;
-  }
+    if (imgRatio > targetRatio) {
+        finalHeight = targetWidth / imgRatio;
+    } else {
+        finalWidth = targetHeight * imgRatio;
+    }
 
-  // Center the image in the target space
-  const offsetX = (targetWidth - finalWidth) / 2;
-  const offsetY = (targetHeight - finalHeight) / 2;
+    // Center the image in the target space
+    const offsetX = (targetWidth - finalWidth) / 2;
+    const offsetY = (targetHeight - finalHeight) / 2;
 
-  // Set canvas size to target dimensions
-  tempCanvas.width = targetWidth;
-  tempCanvas.height = targetHeight;
+    // Set canvas size to target dimensions
+    tempCanvas.width = targetWidth;
+    tempCanvas.height = targetHeight;
 
-  // Draw with white background
-  tempCtx.fillStyle = '#FFFFFF';
-  tempCtx.fillRect(0, 0, targetWidth, targetHeight);
+    // Draw with white background
+    tempCtx.fillStyle = '#FFFFFF';
+    tempCtx.fillRect(0, 0, targetWidth, targetHeight);
 
-  // Draw resized image centered
-  tempCtx.drawImage(img, offsetX, offsetY, finalWidth, finalHeight);
+    // Draw resized image centered
+    tempCtx.drawImage(img, offsetX, offsetY, finalWidth, finalHeight);
 
-  return tempCanvas;
+    return tempCanvas;
 }
 
 // Function to load an image from URL
@@ -85,6 +84,17 @@ function getSelectedValue(name) {
     return radio ? radio.value : null;
 }
 
+// Function to clear all radio button selections
+function clearSelections() {
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.checked = false;
+    });
+    canvas.width = 0;
+    canvas.height = 0;
+    combinedImageBlob = null;
+    downloadBtn.disabled = true;
+}
+
 combineBtn.addEventListener("click", async () => {
     console.log('Combine button clicked');
     const ozpertValue = getSelectedValue('ozpertBadge');
@@ -92,32 +102,52 @@ combineBtn.addEventListener("click", async () => {
     
     console.log('Selected badges:', { ozpertValue, coreValue });
     
-    if (!ozpertValue || !coreValue) {
-        alert("Please select one badge from each category.");
+    if (!ozpertValue && !coreValue) {
+        alert("Please select at least one badge.");
         return;
     }
 
     try {
-        // Load selected images and the fixed OZ image
-        const selectedImages = await Promise.all([
-            loadImageFromUrl(badgeImages.ozImage), // Fixed OZ image
-            loadImageFromUrl(badgeImages.ozpertBadges[ozpertValue]),
-            loadImageFromUrl(badgeImages.coreValues[coreValue])
-        ]);
+        // Prepare images to load
+        const imagesToLoad = [loadImageFromUrl(badgeImages.ozImage)]; // Always load OZ image
+        let totalWidth = 0;
+        let standardSize = 0;
 
-        // Find the ideal dimensions for resizing (excluding OZ image for standardization)
-        const maxWidth = Math.max(...selectedImages.slice(1).map(img => img.width));
-        const maxHeight = Math.max(...selectedImages.slice(1).map(img => img.height));
+        // Handle single or dual badge selection
+        if (ozpertValue && coreValue) {
+            // Both badges selected
+            imagesToLoad.push(
+                loadImageFromUrl(badgeImages.ozpertBadges[ozpertValue]),
+                loadImageFromUrl(badgeImages.coreValues[coreValue])
+            );
+        } else if (ozpertValue) {
+            // Only Ozpert badge selected
+            imagesToLoad.push(loadImageFromUrl(badgeImages.ozpertBadges[ozpertValue]));
+        } else if (coreValue) {
+            // Only Core Value badge selected
+            imagesToLoad.push(loadImageFromUrl(badgeImages.coreValues[coreValue]));
+        }
 
-        // Standardize size for selected images (not OZ image)
-        const standardSize = Math.max(maxWidth, maxHeight);
-        const resizedImages = selectedImages.slice(1).map(img => resizeImage(img, standardSize, standardSize));
+        // Load all selected images
+        const selectedImages = await Promise.all(imagesToLoad);
 
         // OZ image retains original dimensions
         const ozImage = selectedImages[0];
 
-        // Calculate total width (OZ image width + standardized images)
-        const totalWidth = ozImage.width + standardSize * resizedImages.length;
+        // Standardize size for badges
+        if (selectedImages.length > 1) {
+            standardSize = Math.max(
+                ...selectedImages.slice(1).map(img => Math.max(img.width, img.height))
+            );
+        }
+
+        // Resize badges if any
+        const resizedBadges = selectedImages.slice(1).map(img => 
+            resizeImage(img, standardSize, standardSize)
+        );
+
+        // Calculate total width
+        totalWidth = ozImage.width + standardSize * resizedBadges.length;
         const standardHeight = Math.max(ozImage.height, standardSize);
 
         // Resize canvas
@@ -128,14 +158,12 @@ combineBtn.addEventListener("click", async () => {
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, totalWidth, standardHeight);
 
-        // Draw OZ image at original size on the left
+        // Draw OZ image on the left
         ctx.drawImage(ozImage, 0, (standardHeight - ozImage.height) / 2);
 
-        // Draw resized images side by side after OZ image
-        let xOffset = ozImage.width;
-        resizedImages.forEach(img => {
-            ctx.drawImage(img, xOffset, 0);
-            xOffset += standardSize;
+        // Draw resized badges sequentially
+        resizedBadges.forEach((badge, index) => {
+            ctx.drawImage(badge, ozImage.width + index * standardSize, 0);
         });
 
         // Convert to Blob for download
@@ -158,6 +186,8 @@ downloadBtn.addEventListener("click", () => {
     a.click();
     URL.revokeObjectURL(url);
 });
+
+clearBtn.addEventListener("click", clearSelections);
 
 function loadImage(file) {
     return new Promise((resolve, reject) => {
