@@ -1,0 +1,232 @@
+% Defining document class and essential packages
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+\usepackage{parskip}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+% Configuring font package last
+\usepackage{noto}
+
+% Setting up title formatting
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection}{1em}{}
+
+% Defining custom colors for Teams theme
+\definecolor{teamsblue}{RGB}{0, 103, 184}
+
+% Beginning document
+\begin{document}
+
+% Creating title page
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    {\huge\bfseries Email Badge Combiner: A Modern Web Application for OZ Digital Recognition System\par}
+    \vspace{1cm}
+    {\large OZ Digital Recognition System Overview\par}
+    \vspace{1.5cm}
+    {\normalsize October 19, 2025\par}
+    \vspace{1cm}
+\end{titlepage}
+
+% Starting main content
+\section{Project Overview}
+The Email Badge Combiner is a sophisticated web application designed to streamline the process of combining achievement badges and core value recognitions for OZ Digital's internal recognition system. Deployed on Azure Static Web Apps, it leverages modern web technologies to provide a reliable and scalable solution for badge generation.
+
+\section{Purpose and Use Case}
+The application serves two primary purposes:
+\begin{itemize}
+    \item Combining Ozpert achievement badges (Bronze, Silver, Gold, Diamond) with OZ Digital's core value badges.
+    \item Creating standardized, professional-looking composite images for use in email communications and recognition systems.
+\end{itemize}
+The tool enables users to:
+\begin{itemize}
+    \item Select from multiple achievement levels.
+    \item Combine them with core value recognitions.
+    \item Generate consistent, properly sized composite images.
+    \item Download results for immediate use.
+\end{itemize}
+
+\section{Technical Implementation}
+\subsection{Architecture}
+The application is built using:
+\begin{itemize}
+    \item \textbf{Frontend}: HTML5, CSS3, and vanilla JavaScript.
+    \item \textbf{Image Processing}: HTML5 Canvas API.
+    \item \textbf{Deployment}: Azure Static Web Apps.
+    \item \textbf{CI/CD}: GitHub Actions.
+    \item \textbf{Development Tools}: Node.js and npm.
+\end{itemize}
+
+\subsection{Key Components}
+\subsubsection{Badge Generation System}
+\begin{itemize}
+    \item Uses Node.js Canvas API to generate placeholder badges.
+    \item Implements dynamic text wrapping for badge labels.
+    \item Maintains consistent 200x200 pixel dimensions.
+\end{itemize}
+
+\subsubsection{Image Processing Engine}
+\begin{itemize}
+    \item Implements smart image resizing while maintaining aspect ratios.
+    \item Centers images in standardized spaces.
+    \item Provides clean white backgrounds for consistency.
+\end{itemize}
+
+\subsubsection{User Interface}
+\begin{itemize}
+    \item Modern, responsive design.
+    \item Intuitive radio button selection interface.
+    \item Real-time canvas preview.
+    \item Background styling with Teams theme integration.
+\end{itemize}
+
+\subsection{Deployment}
+The application is deployed using Azure Static Web Apps with automated CI/CD through GitHub Actions, including:
+\begin{itemize}
+    \item Automatic builds triggered by pushes to the main branch.
+    \item Node.js dependency management.
+    \item Static file serving optimization.
+    \item Custom routing configurations.
+\end{itemize}
+
+\section{Features}
+\subsection{Badge Selection}
+\begin{itemize}
+    \item Ozpert Badges: Bronze, Silver, Gold, Diamond.
+    \item Core Values: Be Positive, Empathize, Evolve Constantly, Focus on Outcome, We Succeed as a Team.
+\end{itemize}
+
+\subsection{Image Processing}
+\begin{itemize}
+    \item Automatic image resizing.
+    \item Aspect ratio preservation.
+    \item Consistent output dimensions.
+    \item Clean white backgrounds.
+\end{itemize}
+
+\subsection{User Experience}
+\begin{itemize}
+    \item Real-time preview.
+    \item One-click download.
+    \item Modern, responsive interface.
+    \item Teams-themed background.
+\end{itemize}
+
+\subsection{Error Handling}
+\begin{itemize}
+    \item Input validation.
+    \item Image loading error management.
+    \item User feedback for actions.
+\end{itemize}
+
+\section{How to Replicate}
+\subsection{Prerequisites}
+\begin{itemize}
+    \item Node.js (latest LTS version).
+    \item npm package manager.
+    \item Azure account.
+    \item GitHub account.
+\end{itemize}
+
+\subsection{Setup Steps}
+\subsubsection{Azure Deployment}
+\begin{enumerate}
+    \item Create a new Static Web App in Azure Portal.
+    \item Connect to your GitHub repository.
+    \item Configure build settings:
+    \begin{itemize}
+        \item App location: "/".
+        \item Output location: "/".
+        \item Build command: "npm run build:azure".
+    \end{itemize}
+\end{enumerate}
+
+\section{Potential Improvements}
+\subsection{Technical Enhancements}
+\begin{itemize}
+    \item Add image caching for improved performance.
+    \item Implement drag-and-drop interface for custom badges.
+    \item Add batch processing capabilities.
+    \item Include image optimization before download.
+\end{itemize}
+
+\subsection{Feature Additions}
+\begin{itemize}
+    \item Custom badge text input.
+    \item Additional badge combinations (3+ badges).
+    \item Badge templates and presets.
+    \item Share functionality for direct email integration.
+\end{itemize}
+
+\subsection{User Experience}
+\begin{itemize}
+    \item Preview animations for selection.
+    \item Mobile-optimized interface.
+    \item Dark mode support.
+    \item Accessibility improvements.
+\end{itemize}
+
+\subsection{Administrative Features}
+\begin{itemize}
+    \item Badge management interface.
+    \item Usage analytics.
+    \item Custom color schemes.
+    \item Template management.
+\end{itemize}
+
+\section{Maintenance and Support}
+The application requires minimal maintenance, including:
+\begin{itemize}
+    \item Regular updates to dependencies.
+    \item Monitoring of Azure Static Web App metrics.
+    \item Periodic review of badge designs and colors.
+    \item Updates to core values or achievement levels as needed.
+\end{itemize}
+
+\section{Best Practices Implemented}
+\subsection{Code Organization}
+\begin{itemize}
+    \item Modular JavaScript functions.
+    \item Clear separation of concerns.
+    \item Consistent naming conventions.
+    \item Comprehensive error handling.
+\end{itemize}
+
+\subsection{Performance}
+\begin{itemize}
+    \item Efficient image processing.
+    \item Optimized canvas operations.
+    \item Minimal dependencies.
+    \item Responsive design practices.
+\end{itemize}
+
+\subsection{Security}
+\begin{itemize}
+    \item Content security policies.
+    \item Secure file handling.
+    \item Azure security best practices.
+    \item Input validation.
+\end{itemize}
+
+\subsection{Deployment}
+\begin{itemize}
+    \item Automated CI/CD pipeline.
+    \item Environment configuration.
+    \item Build optimization.
+    \item Error logging.
+\end{itemize}
+
+\section{Conclusion}
+The Email Badge Combiner is a crucial tool in OZ Digital's recognition system, streamlining the creation of professional badge combinations while maintaining consistency and ease of use. Its modern architecture and deployment on Azure ensure reliability and scalability for future growth. Implementing the suggested improvements will further enhance its functionality and user experience.
+
+% Adding contact for further information
+For additional details or assistance, please contact OZ Digital's IT department or visit \href{https://x.ai}{xAI's website}.
+
+\end{document}

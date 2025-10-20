@@ -17,7 +17,8 @@ const badgeImages = {
         evolveConstantly: 'badges/evolve-constantly.png',
         focusOnOutcome: 'badges/focus-on-outcome.png',
         succeedAsTeam: 'badges/succeed-as-team.png'
-    }
+    },
+    ozImage: 'badges/OZ.png' // Fixed OZ image
 };
 
 let combinedImageBlob = null;
@@ -97,65 +98,72 @@ combineBtn.addEventListener("click", async () => {
     }
 
     try {
-        // Load selected images
+        // Load selected images and the fixed OZ image
         const selectedImages = await Promise.all([
+            loadImageFromUrl(badgeImages.ozImage), // Fixed OZ image
             loadImageFromUrl(badgeImages.ozpertBadges[ozpertValue]),
             loadImageFromUrl(badgeImages.coreValues[coreValue])
         ]);
 
-        // Find the ideal dimensions
-        const maxWidth = Math.max(...selectedImages.map(img => img.width));
-        const maxHeight = Math.max(...selectedImages.map(img => img.height));
+        // Find the ideal dimensions for resizing (excluding OZ image for standardization)
+        const maxWidth = Math.max(...selectedImages.slice(1).map(img => img.width));
+        const maxHeight = Math.max(...selectedImages.slice(1).map(img => img.height));
 
-        // Standardize size for all images
+        // Standardize size for selected images (not OZ image)
         const standardSize = Math.max(maxWidth, maxHeight);
-        const resizedImages = selectedImages.map(img => resizeImage(img, standardSize, standardSize));
+        const resizedImages = selectedImages.slice(1).map(img => resizeImage(img, standardSize, standardSize));
 
-    // Calculate total width and use standard height
-    const totalWidth = standardSize * resizedImages.length;
-    const standardHeight = standardSize;
+        // OZ image retains original dimensions
+        const ozImage = selectedImages[0];
 
-    // Resize canvas
-    canvas.width = totalWidth;
-    canvas.height = standardHeight;
+        // Calculate total width (OZ image width + standardized images)
+        const totalWidth = ozImage.width + standardSize * resizedImages.length;
+        const standardHeight = Math.max(ozImage.height, standardSize);
 
-    // Draw background
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, totalWidth, standardHeight);
+        // Resize canvas
+        canvas.width = totalWidth;
+        canvas.height = standardHeight;
 
-    // Draw images side by side
-    let xOffset = 0;
-    resizedImages.forEach(img => {
-      ctx.drawImage(img, xOffset, 0);
-      xOffset += standardSize;
-    });
+        // Draw background
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, totalWidth, standardHeight);
 
-    // Convert to Blob for download
-    canvas.toBlob(blob => {
-      combinedImageBlob = blob;
-      downloadBtn.disabled = false;
-    }, "image/png");
-  } catch (error) {
-    console.error('Error processing images:', error);
-    alert('Error processing one or more images. Please try again with valid image files.');
-  }
+        // Draw OZ image at original size on the left
+        ctx.drawImage(ozImage, 0, (standardHeight - ozImage.height) / 2);
+
+        // Draw resized images side by side after OZ image
+        let xOffset = ozImage.width;
+        resizedImages.forEach(img => {
+            ctx.drawImage(img, xOffset, 0);
+            xOffset += standardSize;
+        });
+
+        // Convert to Blob for download
+        canvas.toBlob(blob => {
+            combinedImageBlob = blob;
+            downloadBtn.disabled = false;
+        }, "image/png");
+    } catch (error) {
+        console.error('Error processing images:', error);
+        alert('Error processing one or more images. Please try again with valid image files.');
+    }
 });
 
 downloadBtn.addEventListener("click", () => {
-  if (!combinedImageBlob) return;
-  const url = URL.createObjectURL(combinedImageBlob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "combined_badges.png";
-  a.click();
-  URL.revokeObjectURL(url);
+    if (!combinedImageBlob) return;
+    const url = URL.createObjectURL(combinedImageBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "combined_badges.png";
+    a.click();
+    URL.revokeObjectURL(url);
 });
 
 function loadImage(file) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = URL.createObjectURL(file);
-  });
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = URL.createObjectURL(file);
+    });
 }
