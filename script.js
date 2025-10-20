@@ -92,34 +92,26 @@ combineBtn.addEventListener("click", async () => {
     
     console.log('Selected badges:', { ozpertValue, coreValue });
     
-    if (!ozpertValue && !coreValue) {
-        alert("Please select at least one badge.");
+    if (!ozpertValue || !coreValue) {
+        alert("Please select one badge from each category.");
         return;
     }
 
     try {
-        // Prepare array of images to load
-        const imagesToLoad = [loadImageFromUrl(badgeImages.ozImage)]; // Always load OZ image
-        
-        // Add selected badges if they exist
-        if (ozpertValue) {
-            imagesToLoad.push(loadImageFromUrl(badgeImages.ozpertBadges[ozpertValue]));
-        }
-        if (coreValue) {
-            imagesToLoad.push(loadImageFromUrl(badgeImages.coreValues[coreValue]));
-        }
-        
-        // Load all selected images
-        const selectedImages = await Promise.all(imagesToLoad);
+        // Load selected images and the fixed OZ image
+        const selectedImages = await Promise.all([
+            loadImageFromUrl(badgeImages.ozImage), // Fixed OZ image
+            loadImageFromUrl(badgeImages.ozpertBadges[ozpertValue]),
+            loadImageFromUrl(badgeImages.coreValues[coreValue])
+        ]);
 
         // Find the ideal dimensions for resizing (excluding OZ image for standardization)
-        const badgeImages = selectedImages.slice(1); // Get all images except OZ image
-        const maxWidth = badgeImages.length > 0 ? Math.max(...badgeImages.map(img => img.width)) : 0;
-        const maxHeight = badgeImages.length > 0 ? Math.max(...badgeImages.map(img => img.height)) : 0;
+        const maxWidth = Math.max(...selectedImages.slice(1).map(img => img.width));
+        const maxHeight = Math.max(...selectedImages.slice(1).map(img => img.height));
 
         // Standardize size for selected images (not OZ image)
-        const standardSize = Math.max(maxWidth, maxHeight, 200); // Minimum size of 200px
-        const resizedImages = badgeImages.map(img => resizeImage(img, standardSize, standardSize));
+        const standardSize = Math.max(maxWidth, maxHeight);
+        const resizedImages = selectedImages.slice(1).map(img => resizeImage(img, standardSize, standardSize));
 
         // OZ image retains original dimensions
         const ozImage = selectedImages[0];
