@@ -160,7 +160,7 @@ async function combineImages() {
         }, "image/png");
     } catch (error) {
         console.error('Error processing images:', error);
-        alert('Error processing one or more images. Please try again with valid image files.');
+        //alert('Error processing one or more images. Please try again with valid image files.');
     }
 }
 
