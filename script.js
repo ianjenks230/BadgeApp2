@@ -1,8 +1,12 @@
 const combineBtn = document.getElementById("combineBtn");
 const downloadBtn = document.getElementById("downloadBtn");
-const clearBtn = document.getElementById("clearBtn"); // New clear button
+const clearBtn = document.getElementById("clearBtn");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+const ozScaleSlider = document.getElementById("ozScaleSlider");
+const badgeScaleSlider = document.getElementById("badgeScaleSlider");
+const ozScaleValue = document.getElementById("ozScaleValue");
+const badgeScaleValue = document.getElementById("badgeScaleValue");
 
 // Badge image paths
 const badgeImages = {
@@ -19,7 +23,7 @@ const badgeImages = {
         focusOnOutcome: 'badges/focus-on-outcome.png',
         succeedAsTeam: 'badges/succeed-as-team.png'
     },
-    ozImage: 'badges/OZ.png' // Fixed OZ image
+    ozImage: 'badges/OZ.png'
 };
 
 let combinedImageBlob = null;
@@ -28,12 +32,8 @@ let combinedImageBlob = null;
 function resizeImage(img, targetWidth, targetHeight) {
     const tempCanvas = document.createElement('canvas');
     const tempCtx = tempCanvas.getContext('2d');
-
-    // Calculate aspect ratios
     const imgRatio = img.width / img.height;
     const targetRatio = targetWidth / targetHeight;
-
-    // Determine dimensions to maintain aspect ratio
     let finalWidth = targetWidth;
     let finalHeight = targetHeight;
 
@@ -43,21 +43,13 @@ function resizeImage(img, targetWidth, targetHeight) {
         finalWidth = targetHeight * imgRatio;
     }
 
-    // Center the image in the target space
     const offsetX = (targetWidth - finalWidth) / 2;
     const offsetY = (targetHeight - finalHeight) / 2;
-
-    // Set canvas size to target dimensions
     tempCanvas.width = targetWidth;
     tempCanvas.height = targetHeight;
-
-    // Draw with white background
     tempCtx.fillStyle = '#FFFFFF';
     tempCtx.fillRect(0, 0, targetWidth, targetHeight);
-
-    // Draw resized image centered
     tempCtx.drawImage(img, offsetX, offsetY, finalWidth, finalHeight);
-
     return tempCanvas;
 }
 
@@ -93,80 +85,75 @@ function clearSelections() {
     canvas.height = 0;
     combinedImageBlob = null;
     downloadBtn.disabled = true;
+    ozScaleSlider.value = 1.5;
+    badgeScaleSlider.value = 1.0;
+    ozScaleValue.textContent = ozScaleSlider.value;
+    badgeScaleValue.textContent = badgeScaleSlider.value;
 }
 
-combineBtn.addEventListener("click", async () => {
-    console.log('Combine button clicked');
+// Function to combine images
+async function combineImages() {
     const ozpertValue = getSelectedValue('ozpertBadge');
     const coreValue = getSelectedValue('coreValue');
     
     console.log('Selected badges:', { ozpertValue, coreValue });
     
     if (!ozpertValue && !coreValue) {
-        alert("Please select at least one badge.");
+        canvas.width = 0;
+        canvas.height = 0;
+        combinedImageBlob = null;
+        downloadBtn.disabled = true;
         return;
     }
 
     try {
-        // Prepare images to load
-        const imagesToLoad = [loadImageFromUrl(badgeImages.ozImage)]; // Always load OZ image
-        let totalWidth = 0;
-        let standardSize = 0;
+        const imagesToLoad = [loadImageFromUrl(badgeImages.ozImage)];
+        let totalHeight = 0;
+        let standardWidth = 0;
 
-        // Handle single or dual badge selection
         if (ozpertValue && coreValue) {
-            // Both badges selected
             imagesToLoad.push(
                 loadImageFromUrl(badgeImages.ozpertBadges[ozpertValue]),
                 loadImageFromUrl(badgeImages.coreValues[coreValue])
             );
         } else if (ozpertValue) {
-            // Only Ozpert badge selected
             imagesToLoad.push(loadImageFromUrl(badgeImages.ozpertBadges[ozpertValue]));
         } else if (coreValue) {
-            // Only Core Value badge selected
             imagesToLoad.push(loadImageFromUrl(badgeImages.coreValues[coreValue]));
         }
 
-        // Load all selected images
         const selectedImages = await Promise.all(imagesToLoad);
-
-        // OZ image retains original dimensions
         const ozImage = selectedImages[0];
+        const ozScaleFactor = parseFloat(ozScaleSlider.value);
+        const badgeScaleFactor = parseFloat(badgeScaleSlider.value);
 
-        // Standardize size for badges
         if (selectedImages.length > 1) {
-            standardSize = Math.max(
+            standardWidth = Math.max(
                 ...selectedImages.slice(1).map(img => Math.max(img.width, img.height))
-            );
+            ) * badgeScaleFactor;
         }
 
-        // Resize badges if any
         const resizedBadges = selectedImages.slice(1).map(img => 
-            resizeImage(img, standardSize, standardSize)
+            resizeImage(img, standardWidth, standardWidth)
         );
 
-        // Calculate total width
-        totalWidth = ozImage.width + standardSize * resizedBadges.length;
-        const standardHeight = Math.max(ozImage.height, standardSize);
+        const scaledOzWidth = ozImage.width * ozScaleFactor;
+        const scaledOzHeight = ozImage.height * ozScaleFactor;
+        totalHeight = scaledOzHeight + standardWidth * resizedBadges.length;
+        const standardWidthFinal = Math.max(scaledOzWidth, standardWidth);
 
-        // Resize canvas
-        canvas.width = totalWidth;
-        canvas.height = standardHeight;
+        canvas.width = standardWidthFinal;
+        canvas.height = totalHeight;
 
-        // Draw background
         ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 0, totalWidth, standardHeight);
+        ctx.fillRect(0, 0, standardWidthFinal, totalHeight);
 
-        // Draw OZ image on the left
-        ctx.drawImage(ozImage, 0, (standardHeight - ozImage.height) / 2);
+        ctx.drawImage(ozImage, (standardWidthFinal - scaledOzWidth) / 2, 0, scaledOzWidth, scaledOzHeight);
 
-        // Draw resized badges sequentially
         resizedBadges.forEach((badge, index) => {
-            ctx.drawImage(badge, ozImage.width + index * standardSize, 0);
+            ctx.drawImage(badge, 0, scaledOzHeight + index * standardWidth);
         });
 
-        // Convert to Blob for download
         canvas.toBlob(blob => {
             combinedImageBlob = blob;
             downloadBtn.disabled = false;
@@ -175,7 +162,24 @@ combineBtn.addEventListener("click", async () => {
         console.error('Error processing images:', error);
         alert('Error processing one or more images. Please try again with valid image files.');
     }
+}
+
+// Event listeners for dynamic updates
+ozScaleSlider.addEventListener("input", () => {
+    ozScaleValue.textContent = ozScaleSlider.value;
+    combineImages();
 });
+
+badgeScaleSlider.addEventListener("input", () => {
+    badgeScaleValue.textContent = badgeScaleSlider.value;
+    combineImages();
+});
+
+document.querySelectorAll('input[type="radio"]').forEach(radio => {
+    radio.addEventListener("change", combineImages);
+});
+
+combineBtn.addEventListener("click", combineImages);
 
 downloadBtn.addEventListener("click", () => {
     if (!combinedImageBlob) return;
