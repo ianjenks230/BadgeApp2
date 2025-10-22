@@ -53,20 +53,27 @@ function resizeImage(img, targetWidth, targetHeight) {
     return tempCanvas;
 }
 
+// Function to add cache busting to image URLs
+function getImageUrl(baseUrl) {
+    const timestamp = new Date().getTime();
+    return `${baseUrl}?v=${timestamp}`;
+}
+
 // Function to load an image from URL
 function loadImageFromUrl(url) {
     console.log('Loading image from:', url);
+    const bustedUrl = getImageUrl(url);
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.onload = () => {
-            console.log('Successfully loaded image:', url);
+            console.log('Successfully loaded image:', bustedUrl);
             resolve(img);
         };
         img.onerror = () => {
-            console.error(`Failed to load image: ${url}`);
-            reject(new Error(`Failed to load image: ${url}`));
+            console.error(`Failed to load image: ${bustedUrl}`);
+            reject(new Error(`Failed to load image: ${bustedUrl}`));
         };
-        img.src = url;
+        img.src = bustedUrl;
     });
 }
 
@@ -86,7 +93,7 @@ function clearSelections() {
     combinedImageBlob = null;
     downloadBtn.disabled = true;
     ozScaleSlider.value = 1.5;
-    badgeScaleSlider.value = 1.0;
+    badgeScaleSlider.value = 1.5;
     ozScaleValue.textContent = ozScaleSlider.value;
     badgeScaleValue.textContent = badgeScaleSlider.value;
 }
@@ -160,7 +167,6 @@ async function combineImages() {
         }, "image/png");
     } catch (error) {
         console.error('Error processing images:', error);
-        //alert('Error processing one or more images. Please try again with valid image files.');
     }
 }
 
